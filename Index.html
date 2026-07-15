@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Client Time Clock</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, #0f172a, #1e293b);
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+  .card.active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px #38bdf8 inset;
+  }
+  .city {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+  .region {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .time {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .date {
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    margin-top: 4px;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(56,189,248,0.15);
+    color: #38bdf8;
+  }
+  .badge.off {
+    background: rgba(148,163,184,0.15);
+    color: #94a3b8;
+  }
+  footer {
+    text-align: center;
+    margin-top: 24px;
+    color: #64748b;
+    font-size: 0.7rem;
+  }
+</style>
+</head>
+<body>
+  <h1>🕒 Jam Waktu Klien</h1>
+  <div class="subtitle">Buat cek kira-kira di sana lagi jam berapa</div>
+  <div class="grid" id="grid"></div>
+  <footer>Update otomatis tiap detik</footer>
+
+<script>
+const zones = [
+  { city: "New York", region: "US East", tz: "America/New_York" },
+  { city: "Chicago", region: "US Central", tz: "America/Chicago" },
+  { city: "Los Angeles", region: "US West", tz: "America/Los_Angeles" },
+  { city: "London", region: "UK", tz: "Europe/London" },
+  { city: "Berlin", region: "Eropa Tengah", tz: "Europe/Berlin" },
+  { city: "Sydney", region: "Australia", tz: "Australia/Sydney" },
+];
+
+function isBusinessHour(hour) {
+  return hour >= 8 && hour < 18;
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  zones.forEach(z => {
+    const now = new Date();
+    const opts = { timeZone: z.tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const timeStr = new Intl.DateTimeFormat('en-GB', opts).format(now);
+    const dateOpts = { timeZone: z.tz, weekday: 'short', day: 'numeric', month: 'short' };
+    const dateStr = new Intl.DateTimeFormat('id-ID', dateOpts).format(now);
+    const hourOpts = { timeZone: z.tz, hour: 'numeric', hour12: false };
+    const hourNum = parseInt(new Intl.DateTimeFormat('en-GB', hourOpts).format(now));
+    const active = isBusinessHour(hourNum);
+
+    const card = document.createElement('div');
+    card.className = 'card' + (active ? ' active' : '');
+    card.innerHTML = `
+      <div class="city">${z.city}</div>
+      <div class="region">${z.region}</div>
+      <div class="time">${timeStr}</div>
+      <div class="date">${dateStr}</div>
+      <span class="badge ${active ? '' : 'off'}">${active ? 'Jam kerja' : 'Di luar jam kerja'}</span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+render();
+setInterval(render, 1000);
+</script>
+</body>
+</html>
